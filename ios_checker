@@ -45,8 +45,8 @@ def main():
 
     #################################################################################################
     #  Within single quotes, define the clientid and secret that was given from developer.cisco.com #
-    openvuln_clientid = 'bkmm3n7vhvfd7v3y7a52bty3'
-    openvuln_secret = 'BmuUmCJjyWDRrKv9Cd95FQNG'
+    openvuln_clientid = ''
+    openvuln_secret = ''
     #################################################################################################
 
     #  Define date & time
