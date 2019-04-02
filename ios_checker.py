@@ -25,20 +25,23 @@ import time
 import csv
 
 __author__ = "Sean Sutherland, Brandon Rumer"
-__version__ = "1.1"
+__version__ = "1.2"
 __email__ = "sesuther@cisco.com, brumer@cisco.com"
 __status__ = "Production"
 
 
 def YorN():
     #  Ask user Y or N
-    print('')
-    YesOrNo = input('Do you want to export results to a CSV? y/n  ').lower()
     if (YesOrNo == 'n') or (YesOrNo == 'y'):
         return YesOrNo
-    else:
-        print('Syntax Error')
-        YesOrNo = YorN()
+    Else:
+        print('')
+        YesOrNo = input('Do you want to export results to a CSV? y/n  ').lower()
+        if (YesOrNo == 'n') or (YesOrNo == 'y'):
+            return YesOrNo
+        else:
+            print('Syntax Error')
+            YesOrNo = YorN()
 
 
 def main():
