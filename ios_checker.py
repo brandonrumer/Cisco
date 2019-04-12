@@ -10,6 +10,7 @@ Description:
     Replace openvuln_clientid and openvuln_secret.
         Client ID and Secret can be obtained on the openVuln website,
         https://developer.cisco.com/site/PSIRT/
+        https://apiconsole.cisco.com/
 Usage:
     ios_checker.py -[filename]
         Where [filename] is a single column list of IOS and IOS-XE versions to check.
