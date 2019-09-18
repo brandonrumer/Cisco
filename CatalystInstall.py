@@ -2,7 +2,7 @@
 """ Summary: Connects to multiple Cisco Catalyst switches and upgrades them.
 
 Description:
-    Imports a CSV or IPs and upgrade files. Then this script
+    Imports a CSV of IPs and upgrade files. Then this script
     connects to each device and stages the software. The output
     is captured and exported to a CSV.
 
@@ -12,7 +12,7 @@ Description:
 """
 
 __author__ = "Brandon Rumer"
-__version__ = "1.0"
+__version__ = "1.0.1"
 __email__ = "brumer@cisco.com"
 __status__ = "Production"
 
@@ -58,13 +58,12 @@ def ssh_exec_command(host, binary, ftpserver, user, pw, user_timeout, output_q):
 
     print('')
     print('On' , host , ', I am going to run:')
-    print(commands[0])
-    print(commands[1])
+    for n in commands:
+        print(n)
     print('')
         
     CountOfCommands = len(commands)
     # print('commands: ' , commands)
-    exit(0)
     
     try:
         try:
