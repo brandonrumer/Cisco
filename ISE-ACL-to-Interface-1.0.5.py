@@ -1,5 +1,5 @@
 #!/usr/local/bin/python3
-""" Summary: Adds ACL to access interfaces, which have specific VLANs.
+""" Summary: Reports config on access interfaces, which have specific VLANs.
 
 Description:
     Asks the user whether they want to import a CSV for IPs to work on,
