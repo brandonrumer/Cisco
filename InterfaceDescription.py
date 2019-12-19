@@ -8,7 +8,7 @@ Description:
 """
 
 __author__ = "Brandon Rumer"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __email__ = "brumer@cisco.com"
 __status__ = "Production"
 
@@ -27,7 +27,7 @@ import time
 from netmiko import Netmiko, file_transfer
 from paramiko.ssh_exception import SSHException
 import requests
-# import textfsm
+import textfsm
 
        
 def ssh_exec_command(checkinterface, host, user, pw, user_timeout):
@@ -67,7 +67,10 @@ def ssh_exec_command(checkinterface, host, user, pw, user_timeout):
             
             # Get the router/switches prompt. This will be used later to see if the checkinterface are done.
             deviceprompt = ssh.find_prompt() #NetMiko: find device prompt
-            device_dict.update(Hostname = deviceprompt)
+            Hostname = deviceprompt.replace('#' , '')
+            device_dict.update(Hostname = Hostname)
+
+
 
             ssh.send_command(
                 'terminal length 0\n'
@@ -96,16 +99,20 @@ def ssh_exec_command(checkinterface, host, user, pw, user_timeout):
             #######################################################
             #######################################################
             
-            #print('COMPLETE: show interface')
-            #print('working on output...')
-            #print(deviceprompt)
-            interfacedescription = showinterface.split('description ' , 1)
-            interfacedescription = interfacedescription[1]
+            
+            if (showinterface == '') or (showinterface == None):
+                interfacedescription =  'No description'
+            else:
+                interfacedescription = showinterface.split('description ' , 1)
+                print('1:' , interfacedescription)
+                interfacedescription = interfacedescription[1]
+
             printlist = [host,checkinterface,interfacedescription]
             print('')
-            print('On {} the interface {} has a description of "{}"'.format(host, checkinterface, interfacedescription))
+            print('On {} ({}) the interface {} has a description of "{}"'.format(host, Hostname, checkinterface, interfacedescription))
             ssh.disconnect()
             exit(0)
+
 
             
         except IndexError:
@@ -133,8 +140,9 @@ def main():
         parser = argparse.ArgumentParser(description='Process input device and interface.')
         parser.add_argument('-IP' , required=False, help='The IP to connect to')
         parser.add_argument('-interface', required=False, help='The interface to check. IE: gi1/0/1, gigabitethernet1/0/1')
+        parser.add_argument('-user', required=False, help='Enter username to connect with, typically the domain is not needed.')
         args = vars(parser.parse_args())
-        print(args)
+        #print(args)
         if args['IP'] is None:
             print('')
             IP = input('Whats the IP of the device you want to check? ')
@@ -149,7 +157,15 @@ def main():
         else:
             checkinterface = args['interface']
 
-        print('IP: {} & checkinterface: {}'.format(IP, checkinterface))
+        if args['user'] is None:
+            print('')
+            print('Enter username to connect with.')
+            user = input('(typically, the domain is not needed): ')
+        else:
+            user = args['user']
+
+
+        #print('IP: {} & checkinterface: {}'.format(IP, checkinterface))
 
     except KeyboardInterrupt:
         print('\n Fine. Exiting')
@@ -160,14 +176,7 @@ def main():
 
                     
     # Get credentials for devices & setting some variables
-    print('\n')
-    print('Enter username to connect with.')
-    user = input('(typically, the domain is not needed): ')
-    print('')
-    pw = getpass.getpass("Enter password: ")  #Running this script in IDLE this will give an error. This is an IDLE problem.
-    #print('\n' * 2)
-    
-
+    pw = getpass.getpass("Enter password for connection (password not echod): ")
     host = IP
 
     # Do the work
