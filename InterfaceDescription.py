@@ -27,7 +27,7 @@ import time
 from netmiko import Netmiko, file_transfer
 from paramiko.ssh_exception import SSHException
 import requests
-import textfsm
+# import textfsm
 
        
 def ssh_exec_command(checkinterface, host, user, pw, user_timeout):
@@ -90,7 +90,8 @@ def ssh_exec_command(checkinterface, host, user, pw, user_timeout):
 
             sendcommand = 'show run interface {} | i description'.format(checkinterface)
             #print('sendcommand: ' , sendcommand)
-            showinterface = ssh.send_command(sendcommand , use_textfsm=True)
+            #showinterface = ssh.send_command(sendcommand , use_textfsm=True)
+            showinterface = ssh.send_command(sendcommand)
             
             #######################################################
             #######################################################
