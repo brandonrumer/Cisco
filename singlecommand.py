@@ -13,7 +13,7 @@ Description:
 """
 
 __author__ = "Brandon Rumer"
-__version__ = "1.4.0"
+__version__ = "1.4.1a"
 __email__ = "brumer@cisco.com"
 __status__ = "Production"
 
@@ -542,6 +542,7 @@ if __name__ == "__main__":
 
     # Do the work, while limiting the number of threads
     for host in IPs:
+        host = host.replace(' ','')
         try:
             threadLimiter.acquire()
             my_thread = threading.Thread(target=WorkIt, args=(commands, host, user, pw, user_timeout, output_q))
