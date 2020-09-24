@@ -3,7 +3,7 @@ Useful python scripts when interacting with Cisco devices.
 
 ## Prerequisites
 
-These scripts were written in Python3.
+These scripts were written in Python3. There is a big variation in the modules used: paramiko, netmiko, CiscoConfParse. Eventually I may go back and standardize.
 
 ### Note
 
