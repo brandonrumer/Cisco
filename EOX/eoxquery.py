@@ -9,13 +9,14 @@ Description:
 
 """
 
-__author__ = "Cisco Systems Engineers @ GitHub"
-__version__ = "1.0.0"
+__author__ = "Branodn Rumer"
+__version__ = "1.0.1"
 __status__ = "Production"
 
 
 """ Importing built-in modules """
 import json
+import sys
 
 """ Import external modules """
 import requests
@@ -37,7 +38,6 @@ def get_access_token(client_id, client_secret):
         "&client_secret="+ \
         client_secret
 
-
     headers = {
         'accept': "application/json",
         'content-type': "application/x-www-form-urlencoded",
@@ -45,6 +45,7 @@ def get_access_token(client_id, client_secret):
     }
 
     response = requests.request("POST", url, headers=headers)
+
     if (response.status_code == 200):
         return response.json()['access_token']
     else:
@@ -52,51 +53,41 @@ def get_access_token(client_id, client_secret):
 
 
 def get_eox_details(access_token,inputvalue,searchtype):
-    '''
+    ''' 
     This function will get the EOX record for a particular search
 
     :param access_token: Access Token retrieved from cisco to query the searchtypes
     :param inputvalue: The serial number of pid that is used to query
     :param searchtype: The type of search type to perform.   Either pid or serial
-
     :return: json format of the retrieved data
     '''
 
-
     if searchtype in ["pid"]:
-
         url = "https://api.cisco.com/supporttools/eox/rest/5/EOXByProductID/1/"+inputvalue+"?responseencoding=json"
-    else:
-
+    if searchtype in ["serial"]:
         url = "https://api.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1/"+inputvalue+"?responseencoding=json"
-
+    else:
+        return
 
     headers = {
         'authorization': "Bearer " + access_token,
         'accept': "application/json",
     }
 
-    #print(headers)
-
     response = requests.request("POST", url, headers=headers)
-
-    #print (response)
 
     if (response.status_code == 200):
         # Uncomment to debug
-        #        sys.stderr.write(response.text)
-
+        #sys.stderr.write(response.text)
         #print (response.text)
-
         return json.loads(response.text)
     else:
         response.raise_for_status()
-        return""
+        return
 
 
 def print_eox_details(data):
     '''
-
     :param data: json data of the retrieved data
     :return: none
     '''
@@ -104,11 +95,10 @@ def print_eox_details(data):
 
     EOLProductID=data['EOXRecord'][0]['EOLProductID']
 
-    if EOLProductID is "":
+    if EOLProductID == "":
         print ("No Records Found!")
     else:
         EOXInputValue=data['EOXRecord'][0]['EOXInputValue']
-
 
         ProductIDDescr=data['EOXRecord'][0]['ProductIDDescription']
         EOSDate = data['EOXRecord'][0]['EndOfSaleDate']['value']
@@ -120,7 +110,6 @@ def print_eox_details(data):
         LDOSDate=data['EOXRecord'][0]['LastDateOfSupport']['value']
         EOSvcAttachDate=data['EOXRecord'][0]['EndOfSvcAttachDate']['value']
         MigrationDetails=data['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']
-
 
         print ("Search Value: " +EOXInputValue)
         print ("Product ID: "+EOLProductID)
@@ -135,49 +124,61 @@ def print_eox_details(data):
         print ("Migration PID: "+MigrationDetails)
 
 
-def main():
-
-    print ("Cisco EOX Query Engine Starting...\n")
-
-    #Open up the configuration file and get all application defaults
+def getClient():
+    # Open up the configuration file and get all application defaults
     config = configparser.ConfigParser()
     config.read('package_config.ini')
 
     try:
         client_id = config.get("application","client_id")
         client_secret = config.get("application","client_secret")
-
-    except ConfigParser.NoOptionError:
-        print("package_config.ini is not formatted approriately")
+    except configparser.NoOptionError:
+        print("package_config.ini is not formatted approriately!")
+        exit()
+    except configparser.NoSectionError:
+        print('package_config.ini error. Does the file exist in this directory?')
         exit()
     except:
         print("Unexpected Error")
         exit()
 
-
     access_token = get_access_token(client_id,client_secret)
+    return access_token
 
-    done = False
-    while not done:
 
+def getdata(access_token):
+    try:
         data = input("Enter search string (ex: 'serial {serialnumber}' or 'pid {pid}' or 'quit'): ")
-
-        if data in['quit']:
-            done = True
+        if data.lower() in['quit']:
+            sys.exit(0)
         else:
-
             searchtype,inputstring = data.split(" ",1)
-
+            searchtype = searchtype.lower()
             if searchtype not in ['serial','pid']:
                 print ("Unknown search type: "+searchtype+". Please try again")
             else:
-
                 print ("Performing "+searchtype+ " search for: '"+inputstring.upper()+"':")
                 order_text = get_eox_details(access_token, str(inputstring.upper()),searchtype)
-                #print (order_text)
-
+                # Print out the desired values
                 print_eox_details(order_text)
-                print("\n")
+                print('\n')
+    except Exception:
+        print('Unknown Error. Likely an input error. Quitting...')
+        sys.exit(1)
+
+
+def main():
+    print ("Cisco EOX Query Engine Starting...\n")
+    done = False
+    access_token = getClient()
+    while not done:
+        getdata(access_token)
+        again = input('Run again?  (y/n)   ').lower()
+        if again == 'y':
+            pass
+        else:
+            print('\n')
+            sys.exit(0)
 
 
 if __name__ == "__main__":
