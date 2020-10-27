@@ -11,7 +11,7 @@ Description:
 
 __author__ = "Cisco Systems Engineers @ GitHub"
 __version__ = "1.0.0"
-__status__ = "Development"
+__status__ = "Production"
 
 
 """ Importing built-in modules """
@@ -122,7 +122,7 @@ def print_eox_details(data):
         MigrationDetails=data['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']
 
 
-        print ("Search Value:" +EOXInputValue)
+        print ("Search Value: " +EOXInputValue)
         print ("Product ID: "+EOLProductID)
         print ("Product Description: "+ProductIDDescr)
         print ("End of Sale Date ................. "+EOSDate)
