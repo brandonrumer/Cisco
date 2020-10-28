@@ -17,10 +17,30 @@ __status__ = "Production"
 """ Importing built-in modules """
 import json
 import sys
+import csv
 
 """ Import external modules """
 import requests
 import configparser
+
+
+def get_csv():
+    datafile = 'data.csv'
+    devices = []
+    print('Using' + datafile + ' as version input file.')
+    print('')
+    with open(datafile, 'r', newline='') as infile:
+        for row in csv.reader(infile):
+            # Remove any blank lines
+            if any(entry.strip() for entry in row):
+                devices.append(row[0])
+    title = devices[0]
+    if title.lower() == 'serial':
+        searchtype = 'serial'
+    if title.lower() == 'pid':
+        searchtype = 'pid'
+    del devices[0]
+    return searchtype,devices
 
 
 def get_access_token(client_id, client_secret):
@@ -146,39 +166,71 @@ def getClient():
     return access_token
 
 
-def getdata(access_token):
+def getdata(searchtype, device, access_token):
     try:
-        data = input("Enter search string (ex: 'serial {serialnumber}' or 'pid {pid}' or 'quit'): ")
-        if data.lower() in['quit']:
-            sys.exit(0)
-        else:
+        if searchtype == None:
+            data = input("Enter search string (ex: 'serial {serialnumber}' or 'pid {pid}' or 'quit'): ")
+            if 'quit' in data.lower():
+                sys.exit(0)
             searchtype,inputstring = data.split(" ",1)
             searchtype = searchtype.lower()
             if searchtype not in ['serial','pid']:
                 print ("Unknown search type: "+searchtype+". Please try again")
-            else:
-                print ("Performing "+searchtype+ " search for: '"+inputstring.upper()+"':")
-                order_text = get_eox_details(access_token, str(inputstring.upper()),searchtype)
-                # Print out the desired values
-                print_eox_details(order_text)
-                print('\n')
+                getdata(searchtype, device, access_token)
+        else:
+            inputstring = device
+
+        print ("Performing "+searchtype+ " search for: '"+inputstring.upper()+"':")
+        order_text = get_eox_details(access_token, str(inputstring.upper()),searchtype)
+        print_eox_details(order_text)
+        print('\n')
+
     except Exception:
         print('Unknown Error. Likely an input error. Quitting...')
         sys.exit(1)
 
 
+def ManualOrCSV():
+    print('\n')
+    print('Would you like to use a:')
+    print('  1. CSV for value input, or')
+    print('  2. Manually enter pids/serials')
+    SourceList = input('Press 1 or 2 : ')
+    return SourceList
+
+
 def main():
-    print ("Cisco EOX Query Engine Starting...\n")
-    done = False
+    device = None
+    searchtype = None
     access_token = getClient()
-    while not done:
-        getdata(access_token)
-        again = input('Run again?  (y/n)   ').lower()
-        if again == 'y':
-            pass
-        else:
-            print('\n')
+    SourceList = ManualOrCSV()
+    try:
+        if SourceList.lower() == '1':
+            searchtype,devices = get_csv()
+            for device in devices:
+                print(f'Checking: {device}')
+                try:
+                    getdata(searchtype, device, access_token)
+                except KeyboardInterrupt:
+                    print('Keyboard Interrupt. Exiting...\n')
+                    sys.exit(0)
             sys.exit(0)
+
+        if SourceList.lower() == '2':
+            done = False
+            getdata(searchtype, device, access_token)
+            while not done:
+                again = input('Run again?  (y/n)   ').lower()
+                if again.lower() == 'y':
+                    getdata(searchtype, device, access_token)
+                else:
+                    print('\n')
+                    sys.exit(0)
+        else:
+            ManualOrCSV()
+    except KeyboardInterrupt:
+        print('Keyboard Interrupt. Exiting...')
+        sys.quit(0)
 
 
 if __name__ == "__main__":
