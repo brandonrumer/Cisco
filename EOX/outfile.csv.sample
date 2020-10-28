@@ -1,0 +1,3 @@
+Device,Product ID,Description,End of Sale,End of Software Maint,End of Security Vul Support,End of Routine Failure,End of Service Contract,Last Date of Support,End of Service Attach,Migratin PID
+WS-C3750X-24P-S ,WS-C3750X-24P-S,Catalyst 3750X 24 Port PoE IP Base,2016-10-30,2017-10-30,2019-10-30,2017-10-30,2021-01-28,2021-10-31,2017-10-30,WS-C3850-24P-S
+WS-C3560-12PC-S ,WS-C3560-12PC-S,Catalyst 3560 Compact 12 10/100 PoE + 1 T/SFP; IP Base Image,2013-07-29,2014-07-29,,2014-07-29,2017-10-24,2018-07-31,2014-07-29,WS-C3560C-12PC-S
