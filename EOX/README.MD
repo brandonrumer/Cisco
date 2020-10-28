@@ -17,7 +17,7 @@ eoxquery is a very simple application that allows you to query either by serial 
 
 An example is shown below.   The application will prompt you for either a "pid" or a "serial" number.
 
-Enter search string (ex: 'serial {serialnumber}' or 'pid {pid}' or 'quit'): pid C2801-10UC-VSEC/K9
+```Enter search string (ex: 'serial {serialnumber}' or 'pid {pid}' or 'quit'): pid C2801-10UC-VSEC/K9
 Performing pid search for: 'C2801-10UC-VSEC/K9':
 Search Value:C2801-10UC-VSEC/K9 
 Product ID: C2801-10UC-VSEC/K9
