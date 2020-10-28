@@ -5,12 +5,16 @@ Description:
     eoxquery is a very simple application that allows you to query either by 
     serial number or by product pid.
 
+    The script prompts for a CSV to be used, or manual interaction is possible. 
+    If a CSV is used, there should be a single column of serial numbers or PIDs,
+    with the header (first line) containing either 'serial' or 'pid'. 
+
     Orignal authors: https://github.com/CiscoSE/eoxquery
 
 """
 
 __author__ = "Branodn Rumer"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 __status__ = "Production"
 
 
@@ -18,6 +22,8 @@ __status__ = "Production"
 import json
 import sys
 import csv
+import datetime
+import time
 
 """ Import external modules """
 import requests
@@ -106,42 +112,58 @@ def get_eox_details(access_token,inputvalue,searchtype):
         return
 
 
-def print_eox_details(data):
+def print_eox_details(data,export):
+    ''' 
+    This function will parse the desired value from a particular search
+
+    :param data: the json data returned from the get_eox_detailsget_eox_details function
+    :param export: the user's y/n input for exporting all the results to a csv
+    :return: list of desired values from the device
     '''
-    :param data: json data of the retrieved data
-    :return: none
-    '''
-    #print(data)
+    try:
+        EOLProductID=data['EOXRecord'][0]['EOLProductID']
+        if EOLProductID == "":
+            print ("No Records Found!")
+            if export == 'y':
+                devicedata = [data['EOXRecord'][0]['EOXInputValue'], 'Not Found', 'Not Found', 'Not Found', 
+                'Not Found', 'Not Found', 'Not Found', 'Not Found', 'Not Found', 'Not Found', 'Not Found']
+                return devicedata
+            else:
+                return None
+        else:
+            EOXInputValue=data['EOXRecord'][0]['EOXInputValue']
 
-    EOLProductID=data['EOXRecord'][0]['EOLProductID']
+            ProductIDDescr=data['EOXRecord'][0]['ProductIDDescription']
+            EOSDate = data['EOXRecord'][0]['EndOfSaleDate']['value']
 
-    if EOLProductID == "":
-        print ("No Records Found!")
-    else:
-        EOXInputValue=data['EOXRecord'][0]['EOXInputValue']
-
-        ProductIDDescr=data['EOXRecord'][0]['ProductIDDescription']
-        EOSDate = data['EOXRecord'][0]['EndOfSaleDate']['value']
-
-        EOSWMDate=data['EOXRecord'][0]['EndOfSWMaintenanceReleases']['value']
-        EOSSVulDate=data['EOXRecord'][0]['EndOfSecurityVulSupportDate']['value']
-        EORoutineFailureDate=data['EOXRecord'][0]['EndOfRoutineFailureAnalysisDate']['value']
-        EOSCRDate=data['EOXRecord'][0]['EndOfServiceContractRenewal']['value']
-        LDOSDate=data['EOXRecord'][0]['LastDateOfSupport']['value']
-        EOSvcAttachDate=data['EOXRecord'][0]['EndOfSvcAttachDate']['value']
-        MigrationDetails=data['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']
-
-        print ("Search Value: " +EOXInputValue)
-        print ("Product ID: "+EOLProductID)
-        print ("Product Description: "+ProductIDDescr)
-        print ("End of Sale Date ................. "+EOSDate)
-        print ("End of Software Maint Date ....... "+EOSWMDate)
-        print ("End of Security Vul Support Date . "+EOSSVulDate)
-        print ("End of Routine Failure Date ...... "+EORoutineFailureDate)
-        print ("End of Service Contract Date ..... "+EOSCRDate)
-        print ("Last Date of Support Date ........ "+LDOSDate)
-        print ("End of Service Attach Date ....... "+EOSvcAttachDate)
-        print ("Migration PID: "+MigrationDetails)
+            EOSWMDate=data['EOXRecord'][0]['EndOfSWMaintenanceReleases']['value']
+            EOSSVulDate=data['EOXRecord'][0]['EndOfSecurityVulSupportDate']['value']
+            EORoutineFailureDate=data['EOXRecord'][0]['EndOfRoutineFailureAnalysisDate']['value']
+            EOSCRDate=data['EOXRecord'][0]['EndOfServiceContractRenewal']['value']
+            LDOSDate=data['EOXRecord'][0]['LastDateOfSupport']['value']
+            EOSvcAttachDate=data['EOXRecord'][0]['EndOfSvcAttachDate']['value']
+            MigrationDetails=data['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']
+            print ("Search Value: " +EOXInputValue)
+            print ("Product ID: "+EOLProductID)
+            print ("Product Description: "+ProductIDDescr)
+            print ("End of Sale Date ................. "+EOSDate)
+            print ("End of Software Maint Date ....... "+EOSWMDate)
+            print ("End of Security Vul Support Date . "+EOSSVulDate)
+            print ("End of Routine Failure Date ...... "+EORoutineFailureDate)
+            print ("End of Service Contract Date ..... "+EOSCRDate)
+            print ("Last Date of Support Date ........ "+LDOSDate)
+            print ("End of Service Attach Date ....... "+EOSvcAttachDate)
+            print ("Migration PID: "+MigrationDetails)
+            print('\n')
+            if export == 'y':
+                devicedata = [EOXInputValue, EOLProductID, ProductIDDescr, EOSDate, 
+                EOSWMDate, EOSSVulDate, EORoutineFailureDate, EOSCRDate, LDOSDate, 
+                EOSvcAttachDate, MigrationDetails]
+                return devicedata
+            else:
+                return None
+    except Exception:
+        return None
 
 
 def getClient():
@@ -182,12 +204,13 @@ def getdata(searchtype, device, access_token):
 
         print ("Performing "+searchtype+ " search for: '"+inputstring.upper()+"':")
         order_text = get_eox_details(access_token, str(inputstring.upper()),searchtype)
-        print_eox_details(order_text)
-        print('\n')
+        #print_eox_details(order_text)
+        return order_text
 
     except Exception:
-        print('Unknown Error. Likely an input error. Quitting...')
-        sys.exit(1)
+        print('Unknown Error. Sleeping for 10 seconds. Hoping things clear up.')
+        time.sleep(10)
+        return None
 
 
 def ManualOrCSV():
@@ -202,32 +225,73 @@ def ManualOrCSV():
 def main():
     device = None
     searchtype = None
+    devicetable = []
     access_token = getClient()
     SourceList = ManualOrCSV()
+
+    # Defining date & time
+    today_str = str(datetime.date.today())
+    timestamp = str(today_str + '-' + (time.strftime('%H%M%S')))
+
     try:
+        # Use a CSV for the source. This also allows the results to be exported to a CSV.
         if SourceList.lower() == '1':
+            export = input('Would you like to save the results in a CSV? (y/n) ')
+            if export == 'y':
+                csvExport = 'outfile-{}.csv'.format(timestamp)
+                # Specifying the CSV export filename
+                writer = csv.writer(open(csvExport, 'w', newline=''))
+                writer.writerow(['Device', 'Product ID', 'Description', 'End of Sale', 
+                'End of Software Maint', 'End of Security Vul Support', 'End of Routine Failure',
+                'End of Service Contract', 'Last Date of Support', 'End of Service Attach',
+                'Migratin PID'])
+            else:
+                export == 'n'
+
             searchtype,devices = get_csv()
             for device in devices:
-                print(f'Checking: {device}')
                 try:
-                    getdata(searchtype, device, access_token)
+                    order_text = getdata(searchtype, device, access_token)
                 except KeyboardInterrupt:
                     print('Keyboard Interrupt. Exiting...\n')
-                    sys.exit(0)
+                    break
+                finally:
+                    devicedata = print_eox_details(order_text, export)
+                    devicetable.append(devicedata)
+
+            if export =='y':
+                with open(csvExport, mode='w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(['Device', 'Product ID', 'Description', 'End of Sale', 
+                    'End of Software Maint', 'End of Security Vul Support', 'End of Routine Failure',
+                    'End of Service Contract', 'Last Date of Support', 'End of Service Attach',
+                    'Migratin PID'])
+                    for item in devicetable:
+                        if item == None:
+                            # Accounts for a 'No records found'
+                            pass
+                        else:
+                            writer.writerow(item)
+                print(f'CSV saved at: {csvExport}')
             sys.exit(0)
 
+        # Manual entry of serials/pids
         if SourceList.lower() == '2':
+            export = 'n'
             done = False
-            getdata(searchtype, device, access_token)
+            order_text = getdata(searchtype, device, access_token)
+            print_eox_details(order_text, export)
             while not done:
                 again = input('Run again?  (y/n)   ').lower()
                 if again.lower() == 'y':
-                    getdata(searchtype, device, access_token)
+                    order_text = getdata(searchtype, device, access_token)
+                    print_eox_details(order_text, export)
                 else:
                     print('\n')
                     sys.exit(0)
         else:
             ManualOrCSV()
+
     except KeyboardInterrupt:
         print('Keyboard Interrupt. Exiting...')
         sys.quit(0)
