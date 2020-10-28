@@ -87,10 +87,9 @@ def get_eox_details(access_token,inputvalue,searchtype):
     :param searchtype: The type of search type to perform.   Either pid or serial
     :return: json format of the retrieved data
     '''
-
     if searchtype in ["pid"]:
         url = "https://api.cisco.com/supporttools/eox/rest/5/EOXByProductID/1/"+inputvalue+"?responseencoding=json"
-    if searchtype in ["serial"]:
+    elif searchtype in ["serial"]:
         url = "https://api.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1/"+inputvalue+"?responseencoding=json"
     else:
         return
@@ -99,7 +98,7 @@ def get_eox_details(access_token,inputvalue,searchtype):
         'authorization': "Bearer " + access_token,
         'accept': "application/json",
     }
-
+    
     response = requests.request("POST", url, headers=headers)
 
     if (response.status_code == 200):
