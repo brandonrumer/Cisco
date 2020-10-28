@@ -13,8 +13,9 @@ Description:
 
 """
 
-__author__ = "Branodn Rumer"
+__author__ = "Brandon Rumer"
 __version__ = "1.0.2"
+__email__ = "brumer@cisco.com"
 __status__ = "Production"
 
 
@@ -30,8 +31,8 @@ import requests
 import configparser
 
 
-def get_csv():
-    datafile = 'data.csv'
+def get_csv(datafile):
+
     devices = []
     print('Using' + datafile + ' as version input file.')
     print('')
@@ -98,7 +99,7 @@ def get_eox_details(access_token,inputvalue,searchtype):
         'authorization': "Bearer " + access_token,
         'accept': "application/json",
     }
-    
+
     response = requests.request("POST", url, headers=headers)
 
     if (response.status_code == 200):
@@ -222,6 +223,14 @@ def ManualOrCSV():
 
 
 def main():
+    
+    ########################################################################
+    # This is the input file used if a list of serials/pids are to be used #
+    ########################################################################
+    datafile = 'data.csv'
+    ########################################################################
+    ########################################################################
+
     device = None
     searchtype = None
     devicetable = []
@@ -247,7 +256,7 @@ def main():
             else:
                 export == 'n'
 
-            searchtype,devices = get_csv()
+            searchtype,devices = get_csv(datafile)
             for device in devices:
                 try:
                     order_text = getdata(searchtype, device, access_token)
