@@ -17,7 +17,8 @@ eoxquery is a very simple application that allows you to query either by serial 
 
 An example is shown below.   The application will prompt you for either a "pid" or a "serial" number.
 
-```Enter search string (ex: 'serial {serialnumber}' or 'pid {pid}' or 'quit'): pid C2801-10UC-VSEC/K9
+```
+Enter search string (ex: 'serial {serialnumber}' or 'pid {pid}' or 'quit'): pid C2801-10UC-VSEC/K9
 Performing pid search for: 'C2801-10UC-VSEC/K9':
 Search Value:C2801-10UC-VSEC/K9 
 Product ID: C2801-10UC-VSEC/K9
@@ -30,7 +31,7 @@ End of Service Contract Date ..... 2016-01-30
 Last Date of Support Date ........ 2016-10-31
 End of Service Attach Date ....... 2012-10-31
 Migration PID: C2901-VSEC-SRE/K9
-
+'''
 
 ## Extended Usage
 The script prompts for a CSV to be used, or manual interaction is possible. If a CSV is used, there should be a single column of serial numbers or PIDs, with the header (first line) containing either 'serial' or 'pid'. 
