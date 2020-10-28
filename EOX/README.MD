@@ -35,3 +35,6 @@ Migration PID: C2901-VSEC-SRE/K9
 
 ## Extended Usage
 The script prompts for a CSV to be used, or manual interaction is possible. If a CSV is used, there should be a single column of serial numbers or PIDs, with the header (first line) containing either 'serial' or 'pid'. 
+
+## Notes
+The device will return a 'not found' if there is no EOL, EOS, etc announcement. 
