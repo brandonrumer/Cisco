@@ -1,4 +1,4 @@
-# Cisco
+# singlecommand.py
 Used to apply a set of configs to multiple Cisco devices. There will be various branches of this which will be 
 customized for various tasks or devices
 

@@ -1,4 +1,4 @@
-# Cisco
+# InterfaceDescription.py
 Looks at interface description using Netmiko and TextFSM.
 
 ## Prerequisites
