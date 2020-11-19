@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 """ Summary: Simple Query Application for Cisco Smartnet Total Care EOX API
 
 Description:

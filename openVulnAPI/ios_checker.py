@@ -1,5 +1,4 @@
-#!/usr/bin/python3
-
+#!/usr/bin/env python3
 """
 Summary:
      Programmatically keep up with security vulnerability information
