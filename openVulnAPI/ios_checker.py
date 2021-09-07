@@ -110,8 +110,8 @@ def main():
         #Catches error on user input, and just outputs to screen
         YesOrNo == 'n'
 
-    versionfile = str(sys.argv[1])
-    print('Using' + versionfile + ' as version input file.')
+    versionfile = str(sys.argv[2])
+    print('Using ' + versionfile + ' as version input file.')
     print('')
     with open(versionfile, 'r') as infile:
         reader = csv.reader(infile)
