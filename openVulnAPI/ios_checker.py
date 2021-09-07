@@ -13,10 +13,13 @@ Description:
 Usage:
     ios_checker.py -[filename]
         Where [filename] is a single column list of IOS and IOS-XE versions to check.
+
+Requirements:
+    oauth2, argparse
 """
 
+
 """  Importing built-in modules """
-import oauth2 as oauth
 import json
 import urllib.request
 import sys
@@ -24,27 +27,54 @@ import datetime
 import time
 import csv
 
+"""  Importing third-party modules """
+import oauth2 as oauth
+import argparse
+
+
 __author__ = "Sean Sutherland, Brandon Rumer"
-__version__ = "1.2"
+__version__ = "1.3"
 __email__ = "sesuther@cisco.com, brumer@cisco.com"
 __status__ = "Production"
 
 
+def process_args():
+    parser = argparse.ArgumentParser(description='Checks Cisco for pSIRTs on specific IOS/IOS-XE code.', \
+        formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument(
+        '--file',
+        action='store',
+        metavar='file',
+        required=True,
+        help='Input CSV file of IOS Versions:'
+        )
+    parser.add_argument(
+        '--export',
+        action='store_true',
+        required=False,
+        help='Save results as a CSV.'
+        )
+    return parser.parse_args()
+
+
 def YorN():
     #  Ask user Y or N
-    if (YesOrNo == 'n') or (YesOrNo == 'y'):
-        return YesOrNo
-    Else:
-        print('')
-        YesOrNo = input('Do you want to export results to a CSV? y/n  ').lower()
+    try:
         if (YesOrNo == 'n') or (YesOrNo == 'y'):
             return YesOrNo
-        else:
-            print('Syntax Error')
-            YesOrNo = YorN()
+    except UnboundLocalError:
+        pass
+    print('')
+    YesOrNo = input('Do you want to export results to a CSV? y/n  ').lower()
+    if (YesOrNo == 'n') or (YesOrNo == 'y'):
+        return YesOrNo
+    else:
+        print('Syntax Error')
+        YesOrNo = YorN()
 
 
 def main():
+    args = process_args()
 
     #################################################################################################
     #  Within single quotes, define the clientid and secret that was given from developer.cisco.com #
@@ -63,25 +93,22 @@ def main():
         resp, content = client.request(request_token_url, "POST")
     except Exception:
         sys.stderr.write("Unable to retrieve access token.")
-        exit(1)
-
+        sys.exit(1)
 
     print('_____________________________________________________________')
     print('')
     print('                  IOS Checker CLI Interface')
     print('_____________________________________________________________')
 
-
     YesOrNo = YorN()
     try:
-        if YesOrNo =='y':
+        if YesOrNo == 'y':
             csvExport = 'pSIRT_results-{}.csv'.format(timestamp)
             writer = csv.writer(open(csvExport, 'w', newline=''))
             writer.writerow(['Version', 'pSIRT_ID', 'Advisory_Title', 'Severity'])
     except Exception:
         #Catches error on user input, and just outputs to screen
         YesOrNo == 'n'
-
 
     versionfile = str(sys.argv[1])
     print('Using' + versionfile + ' as version input file.')
@@ -97,7 +124,7 @@ def main():
 
             j = json.loads(content.decode('utf-8'))
 
-            print('Checking version ',version[0])
+            print('Checking version ', version[0])
 
             try:
                 req = urllib.request.Request('https://api.cisco.com/security/advisories/' + type + '?version=' + version[0])
@@ -123,7 +150,7 @@ def main():
                             continue
                 except KeyboardInterrupt:
                     print('\n User Interrupt. Exiting.')
-                    exit(0)
+                    sys.exit(0)
 
             except urllib.error.HTTPError as err:
                 print(version[0] + ",Error")
