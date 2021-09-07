@@ -14,7 +14,7 @@ Replace openvuln_clientid and openvuln_secret.
 
 ### Usage
 
-    ios_checker.py -[filename]
+    ios_checker.py --file [filename]
         Where [filename] is a single column list of IOS and IOS-XE versions to check.
 
 ### Note

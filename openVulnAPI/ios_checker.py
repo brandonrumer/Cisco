@@ -11,7 +11,7 @@ Description:
         https://developer.cisco.com/site/PSIRT/
         https://apiconsole.cisco.com/
 Usage:
-    ios_checker.py -[filename]
+    ios_checker.py --file [filename]
         Where [filename] is a single column list of IOS and IOS-XE versions to check.
 
 Requirements:
