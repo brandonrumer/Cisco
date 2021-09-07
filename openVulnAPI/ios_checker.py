@@ -82,6 +82,14 @@ def main():
     openvuln_secret = ''
     #################################################################################################
 
+    # Check that the clientid & secret are filled in
+    if openvuln_clientid == '':
+        print('There is no clientid entered in the script. Please check README for details.')
+        sys.exit(0)
+    if openvuln_secret == '':
+        print('There is no secret entered in the script. Please check README for details.')
+        sys.exit(0)
+
     #  Define date & time
     today_str = str(datetime.date.today())
     timestamp = str(today_str + '-' + (time.strftime('%H%M%S')))
