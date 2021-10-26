@@ -2,12 +2,12 @@
 """ Summary: Simple Query Application for Cisco Smartnet Total Care EOX API
 
 Description:
-    eoxquery is a very simple application that allows you to query either by 
+    eoxquery is a very simple application that allows you to query either by
     serial number or by product pid.
 
-    The script prompts for a CSV to be used, or manual interaction is possible. 
+    The script prompts for a CSV to be used, or manual interaction is possible.
     If a CSV is used, there should be a single column of serial numbers or PIDs,
-    with the header (first line) containing either 'serial' or 'pid'. 
+    with the header (first line) containing either 'serial' or 'pid'.
 
     Orignal authors: https://github.com/CiscoSE/eoxquery
 
@@ -19,7 +19,7 @@ __email__ = "brumer@cisco.com"
 __status__ = "Production"
 
 
-""" Importing built-in modules """
+""" Importing built-in modules"""
 import json
 import sys
 import csv
@@ -47,7 +47,7 @@ def get_csv(datafile):
     if title.lower() == 'pid':
         searchtype = 'pid'
     del devices[0]
-    return searchtype,devices
+    return searchtype, devices
 
 
 def get_access_token(client_id, client_secret):
@@ -60,9 +60,9 @@ def get_access_token(client_id, client_secret):
     :return: access token to be used in other queries
     '''
 
-    url = "https://cloudsso.cisco.com/as/token.oauth2?grant_type=client_credentials&client_id="+ \
+    url = "https://cloudsso.cisco.com/as/token.oauth2?grant_type=client_credentials&client_id=" + \
         client_id + \
-        "&client_secret="+ \
+        "&client_secret=" + \
         client_secret
 
     headers = {
@@ -79,8 +79,8 @@ def get_access_token(client_id, client_secret):
         response.raise_for_status()
 
 
-def get_eox_details(access_token,inputvalue,searchtype):
-    ''' 
+def get_eox_details(access_token, inputvalue, searchtype):
+    '''
     This function will get the EOX record for a particular search
 
     :param access_token: Access Token retrieved from cisco to query the searchtypes
@@ -89,9 +89,9 @@ def get_eox_details(access_token,inputvalue,searchtype):
     :return: json format of the retrieved data
     '''
     if searchtype in ["pid"]:
-        url = "https://api.cisco.com/supporttools/eox/rest/5/EOXByProductID/1/"+inputvalue+"?responseencoding=json"
+        url = "https://api.cisco.com/supporttools/eox/rest/5/EOXByProductID/1/" + inputvalue + "?responseencoding=json"
     elif searchtype in ["serial"]:
-        url = "https://api.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1/"+inputvalue+"?responseencoding=json"
+        url = "https://api.cisco.com/supporttools/eox/rest/5/EOXBySerialNumber/1/" + inputvalue + "?responseencoding=json"
     else:
         return
 
@@ -104,16 +104,16 @@ def get_eox_details(access_token,inputvalue,searchtype):
 
     if (response.status_code == 200):
         # Uncomment to debug
-        #sys.stderr.write(response.text)
-        #print (response.text)
+        # sys.stderr.write(response.text)
+        # print (response.text)
         return json.loads(response.text)
     else:
         response.raise_for_status()
         return
 
 
-def print_eox_details(data,export):
-    ''' 
+def print_eox_details(data, export):
+    '''
     This function will parse the desired value from a particular search
 
     :param data: the json data returned from the get_eox_detailsget_eox_details function
@@ -121,43 +121,43 @@ def print_eox_details(data,export):
     :return: list of desired values from the device
     '''
     try:
-        EOLProductID=data['EOXRecord'][0]['EOLProductID']
+        EOLProductID = data['EOXRecord'][0]['EOLProductID']
         if EOLProductID == "":
-            print ("No Records Found!")
+            print("No Records Found!")
             if export == 'y':
-                devicedata = [data['EOXRecord'][0]['EOXInputValue'], 'Not Found', 'Not Found', 'Not Found', 
+                devicedata = [data['EOXRecord'][0]['EOXInputValue'], 'Not Found', 'Not Found', 'Not Found',
                 'Not Found', 'Not Found', 'Not Found', 'Not Found', 'Not Found', 'Not Found', 'Not Found']
                 return devicedata
             else:
                 return None
         else:
-            EOXInputValue=data['EOXRecord'][0]['EOXInputValue']
+            EOXInputValue = data['EOXRecord'][0]['EOXInputValue']
 
-            ProductIDDescr=data['EOXRecord'][0]['ProductIDDescription']
+            ProductIDDescr = data['EOXRecord'][0]['ProductIDDescription']
             EOSDate = data['EOXRecord'][0]['EndOfSaleDate']['value']
 
-            EOSWMDate=data['EOXRecord'][0]['EndOfSWMaintenanceReleases']['value']
-            EOSSVulDate=data['EOXRecord'][0]['EndOfSecurityVulSupportDate']['value']
-            EORoutineFailureDate=data['EOXRecord'][0]['EndOfRoutineFailureAnalysisDate']['value']
-            EOSCRDate=data['EOXRecord'][0]['EndOfServiceContractRenewal']['value']
-            LDOSDate=data['EOXRecord'][0]['LastDateOfSupport']['value']
-            EOSvcAttachDate=data['EOXRecord'][0]['EndOfSvcAttachDate']['value']
-            MigrationDetails=data['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']
-            print ("Search Value: " +EOXInputValue)
-            print ("Product ID: "+EOLProductID)
-            print ("Product Description: "+ProductIDDescr)
-            print ("End of Sale Date ................. "+EOSDate)
-            print ("End of Software Maint Date ....... "+EOSWMDate)
-            print ("End of Security Vul Support Date . "+EOSSVulDate)
-            print ("End of Routine Failure Date ...... "+EORoutineFailureDate)
-            print ("End of Service Contract Date ..... "+EOSCRDate)
-            print ("Last Date of Support Date ........ "+LDOSDate)
-            print ("End of Service Attach Date ....... "+EOSvcAttachDate)
-            print ("Migration PID: "+MigrationDetails)
+            EOSWMDate = data['EOXRecord'][0]['EndOfSWMaintenanceReleases']['value']
+            EOSSVulDate = data['EOXRecord'][0]['EndOfSecurityVulSupportDate']['value']
+            EORoutineFailureDate = data['EOXRecord'][0]['EndOfRoutineFailureAnalysisDate']['value']
+            EOSCRDate = data['EOXRecord'][0]['EndOfServiceContractRenewal']['value']
+            LDOSDate = data['EOXRecord'][0]['LastDateOfSupport']['value']
+            EOSvcAttachDate = data['EOXRecord'][0]['EndOfSvcAttachDate']['value']
+            MigrationDetails = data['EOXRecord'][0]['EOXMigrationDetails']['MigrationProductId']
+            print("Search Value: " + EOXInputValue)
+            print("Product ID: " + EOLProductID)
+            print("Product Description: " + ProductIDDescr)
+            print("End of Sale Date ................. " + EOSDate)
+            print("End of Software Maint Date ....... " + EOSWMDate)
+            print("End of Security Vul Support Date . " + EOSSVulDate)
+            print("End of Routine Failure Date ...... " + EORoutineFailureDate)
+            print("End of Service Contract Date ..... " + EOSCRDate)
+            print("Last Date of Support Date ........ " + LDOSDate)
+            print("End of Service Attach Date ....... " + EOSvcAttachDate)
+            print("Migration PID: " + MigrationDetails)
             print('\n')
             if export == 'y':
-                devicedata = [EOXInputValue, EOLProductID, ProductIDDescr, EOSDate, 
-                EOSWMDate, EOSSVulDate, EORoutineFailureDate, EOSCRDate, LDOSDate, 
+                devicedata = [EOXInputValue, EOLProductID, ProductIDDescr, EOSDate,
+                EOSWMDate, EOSSVulDate, EORoutineFailureDate, EOSCRDate, LDOSDate,
                 EOSvcAttachDate, MigrationDetails]
                 return devicedata
             else:
@@ -172,39 +172,39 @@ def getClient():
     config.read('package_config.ini')
 
     try:
-        client_id = config.get("application","client_id")
-        client_secret = config.get("application","client_secret")
+        client_id = config.get("application", "client_id")
+        client_secret = config.get("application", "client_secret")
     except configparser.NoOptionError:
         print("package_config.ini is not formatted approriately!")
-        exit()
+        sys.exit(1)
     except configparser.NoSectionError:
         print('package_config.ini error. Does the file exist in this directory?')
-        exit()
+        sys.exit(1)
     except:
         print("Unexpected Error")
-        exit()
+        sys.exit(1)
 
-    access_token = get_access_token(client_id,client_secret)
+    access_token = get_access_token(client_id, client_secret)
     return access_token
 
 
 def getdata(searchtype, device, access_token):
     try:
-        if searchtype == None:
+        if searchtype is None:
             data = input("Enter search string (ex: 'serial {serialnumber}' or 'pid {pid}' or 'quit'): ")
             if 'quit' in data.lower():
                 sys.exit(0)
-            searchtype,inputstring = data.split(" ",1)
+            searchtype, inputstring = data.split(" ", 1)
             searchtype = searchtype.lower()
-            if searchtype not in ['serial','pid']:
-                print ("Unknown search type: "+searchtype+". Please try again")
+            if searchtype not in ['serial', 'pid']:
+                print("Unknown search type: " + searchtype + ". Please try again")
                 getdata(searchtype, device, access_token)
         else:
             inputstring = device
 
-        print ("Performing "+searchtype+ " search for: '"+inputstring.upper()+"':")
-        order_text = get_eox_details(access_token, str(inputstring.upper()),searchtype)
-        #print_eox_details(order_text)
+        print("Performing " + searchtype + " search for: '" + inputstring.upper() + "':")
+        order_text = get_eox_details(access_token, str(inputstring.upper()), searchtype)
+        # print_eox_details(order_text)
         return order_text
 
     except Exception:
@@ -223,7 +223,6 @@ def ManualOrCSV():
 
 
 def main():
-    
     ########################################################################
     # This is the input file used if a list of serials/pids are to be used #
     ########################################################################
@@ -249,14 +248,14 @@ def main():
                 csvExport = 'outfile-{}.csv'.format(timestamp)
                 # Specifying the CSV export filename
                 writer = csv.writer(open(csvExport, 'w', newline=''))
-                writer.writerow(['Device', 'Product ID', 'Description', 'End of Sale', 
+                writer.writerow(['Device', 'Product ID', 'Description', 'End of Sale',
                 'End of Software Maint', 'End of Security Vul Support', 'End of Routine Failure',
                 'End of Service Contract', 'Last Date of Support', 'End of Service Attach',
                 'Migratin PID'])
             else:
                 export == 'n'
 
-            searchtype,devices = get_csv(datafile)
+            searchtype, devices = get_csv(datafile)
             for device in devices:
                 try:
                     order_text = getdata(searchtype, device, access_token)
@@ -267,15 +266,15 @@ def main():
                     devicedata = print_eox_details(order_text, export)
                     devicetable.append(devicedata)
 
-            if export =='y':
+            if export == 'y':
                 with open(csvExport, mode='w', newline='') as f:
                     writer = csv.writer(f)
-                    writer.writerow(['Device', 'Product ID', 'Description', 'End of Sale', 
+                    writer.writerow(['Device', 'Product ID', 'Description', 'End of Sale',
                     'End of Software Maint', 'End of Security Vul Support', 'End of Routine Failure',
                     'End of Service Contract', 'Last Date of Support', 'End of Service Attach',
                     'Migratin PID'])
                     for item in devicetable:
-                        if item == None:
+                        if item is None:
                             # Accounts for a 'No records found'
                             pass
                         else:
@@ -307,4 +306,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
