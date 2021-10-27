@@ -41,10 +41,8 @@ def get_csv(datafile):
 def get_access_token(client_id, client_secret):
     '''
     This function will get the access token from Cisco to be used in further queries
-
     :param client_id: the client id that was created on the apiconsole.cisco.com
     :param client_secret: the client secret that was created in apiconsole.cisco.com
-
     :return: access token to be used in other queries
     '''
 
@@ -70,7 +68,6 @@ def get_access_token(client_id, client_secret):
 def get_softver_details(access_token, device):
     '''
     This function will get the Recommended Software record for a particular search
-
     :param access_token: Access Token retrieved from cisco to query
     :return: json format of the retrieved data
     '''
@@ -89,15 +86,20 @@ def get_softver_details(access_token, device):
         # sys.stderr.write(response.text)
         # print (response.text)
         return json.loads(response.text)
+    if (response.status_code == 404):
+        # Uncomment to debug
+        # sys.stderr.write(response.text)
+        # print (response.text)
+        response.text = ''
+        return json.loads(response.text)
     else:
         response.raise_for_status()
         return
 
 
-def print_soft_details(data, export):
+def print_soft_details(data, export, device):
     '''
     This function will parse the desired value from a particular search
-
     :param data: the json data returned from the get_softver_detailsget_softver_details function
     :param export: the user's y/n input for exporting all the results to a csv
     :return: list of desired values from the device
@@ -107,7 +109,7 @@ def print_soft_details(data, export):
         if ProductID == "":
             print("No Records Found!")
             if export == 'y':
-                devicedata = ['Not Found', 'Not Found', 'Not Found', 'Not Found',
+                devicedata = [device, 'Not Found', 'Not Found', 'Not Found',
                               'Not Found', 'Not Found', 'Not Found', 'Not Found',
                               'Not Found', 'Not Found']
 
@@ -124,14 +126,16 @@ def print_soft_details(data, export):
                 releaseDate = item['releaseDate']
                 releaseLifeCycle = item['releaseLifeCycle']
                 for vercode in item['images']:
-                    ##########
-                    # still need to account for multiple recommended images!
-                    ##########
-                    if vercode['featureSet'] == 'UNIVERSAL':
+                    if (vercode['featureSet'].upper().endswith('UNIVERSAL')) or (vercode['featureSet'].upper() == 'LAN BASE'):
                         imageName = vercode['imageName']
                         imageSize = vercode['imageSize']
                         requiredDRAM = vercode['requiredDRAM']
                         requiredFlash = vercode['requiredFlash']
+                    else:
+                        imageName = "Multiple Images"
+                        imageSize = "Multiple Images"
+                        requiredDRAM = "Multiple Images"
+                        requiredFlash = "Multiple Images"
 
             print("Product ID........................ " + basePID)
             print("Product Description............... " + productName)
@@ -151,6 +155,8 @@ def print_soft_details(data, export):
                 return devicedata
             else:
                 return None
+    except KeyboardInterrupt:
+        sys.exit(0)
     except Exception as e:
         print(e)
 
@@ -242,7 +248,7 @@ def main():
                     print('Keyboard Interrupt. Exiting...\n')
                     break
                 finally:
-                    devicedata = print_soft_details(order_text, export)
+                    devicedata = print_soft_details(order_text, export, device)
                     devicetable.append(devicedata)
 
             if export == 'y':
