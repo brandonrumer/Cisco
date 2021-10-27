@@ -1,0 +1,80 @@
+{
+    "paginationResponseRecord": {
+        "pageIndex": "1",
+        "lastIndex": "1",
+        "totalRecords": "1",
+        "pageRecords": "1",
+        "selfLink": "https://api.cisco.com/software/suggestion/v2/suggestions/software/productIds/WS-C3750X-24P-S?pageIndex=1",
+        "title": "Software Suggestions"
+    },
+    "productList": [
+        {
+            "id": "1",
+            "product": {
+                "basePID": "WS-C3750X-24P-S",
+                "mdfId": "282979365",
+                "productName": "Catalyst 3750X-24P-S Switch",
+                "softwareType": "IOS Software"
+            },
+            "suggestions": [
+                {
+                    "id": "1",
+                    "isSuggested": "Y",
+                    "releaseFormat1": "15.2.4E10",
+                    "releaseFormat2": "15.2(4)E10",
+                    "releaseDate": "07-Apr-2020",
+                    "majorRelease": "15.2",
+                    "releaseTrain": "15.2E",
+                    "releaseLifeCycle": "MD",
+                    "relDispName": "15.2.4E10",
+                    "trainDispName": "15.2E",
+                    "images": [
+                        {
+                            "imageName": "c3750e-universalk9-tar.152-4.E10.tar",
+                            "imageSize": "30720000",
+                            "featureSet": "UNIVERSAL WITH WEB BASE DEV MGR",
+                            "description": "",
+                            "requiredDRAM": "256 MB",
+                            "requiredFlash": "64 MB"
+                        },
+                        {
+                            "imageName": "c3750e-universalk9npe-tar.152-4.E10.tar",
+                            "imageSize": "30720000",
+                            "featureSet": "UNIVERSAL NO MACSEC WITH WEB BASED DEV MGR",
+                            "description": "",
+                            "requiredDRAM": "256 MB",
+                            "requiredFlash": "64 MB"
+                        },
+                        {
+                            "imageName": "c3750e-universalk9-mz.152-4.E10.bin",
+                            "imageSize": "25549824",
+                            "featureSet": "UNIVERSAL",
+                            "description": "",
+                            "requiredDRAM": "256 MB",
+                            "requiredFlash": "64 MB"
+                        },
+                        {
+                            "imageName": "c3750e-universalk9npe-mz.152-4.E10.bin",
+                            "imageSize": "25549824",
+                            "featureSet": "UNIVERSAL NO MACSEC",
+                            "description": "",
+                            "requiredDRAM": "256 MB",
+                            "requiredFlash": "64 MB"
+                        },
+                        {
+                            "imageName": "c3kx-sm10g-tar.152-4.E10.tar",
+                            "imageSize": "24893440",
+                            "featureSet": "SOFTWARE IMAGE FOR SERVICE MODULE C3KX-SM-10G",
+                            "description": "",
+                            "requiredDRAM": "1024 MB",
+                            "requiredFlash": "128 MB"
+                        }
+                    ],
+                    "errorDetailsResponse": null
+                }
+            ]
+        }
+    ],
+    "status": "Success",
+    "errorDetailsResponse": null
+}

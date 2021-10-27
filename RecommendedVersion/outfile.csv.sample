@@ -1,0 +1,4 @@
+Product ID,Description,Software Type,Recommended Software Version,Software Release Date,Software Release Cycle,Universal Image Filename,Image Size,Required DRAM Size,Required Flash Size
+WS-C3750X-24P-S,Catalyst 3750X-24P-S Switch,IOS Software,15.2(4)E10,07-Apr-2020,MD,c3750e-universalk9-mz.152-4.E10.bin,25549824,256 MB,64 MB
+WS-C3560-12PC-S,Catalyst 3560C-12PC-S Switch,IOS Software,15.2(2)E10,17-May-2019,MD,c3560c405-universalk9-mz.152-2.E10.bin,19833856,128 MB,64 MB
+ASR1001-HX,ASR 1000 Series IOS XE SD-WAN,IOS XE Software,17.3.4a,20-Jul-2021,MD,asr1000-universalk9.17.03.04a.SPA.bin,909520480,0 MB,0 MB
