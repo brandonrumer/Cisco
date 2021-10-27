@@ -11,7 +11,7 @@ Description:
     Multithreading is used so that multiple devices can be configured at
     the same time. The user is asked how many threads are to be used so
     the python-hosted computer or network isn't saturated.
-    
+
 Future:
     -If a specific VLAN is allowed on an access/edge interface then the
     appropriate config is applied.
@@ -25,7 +25,7 @@ __status__ = "Production"
 
 
 """ Importing built-in modules """
-#import csv
+import csv
 import socket
 import argparse
 import sys
@@ -62,7 +62,7 @@ def ConnectIPs(startipInt, endipInt):
         IPs.append(str(i))
     return IPs
 
-       
+
 def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
     """ SSH to the device, sshsend commands, and capture the output
 
@@ -74,15 +74,15 @@ def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
     ssh_error = 'SSH Error'
 
     output = ''
-    output_list = [] # one per device
+    output_list = []  # One per device
     keys = ['Host', 'Hostname', 'Interfaces']
     device_dict = {key: None for key in keys}
     Interfaces = {}
     output_dict = {}
-    
+
     try:
         try:
-            
+
             # Set up SSH session
             device = {
                 'device_type': 'cisco_ios',
@@ -90,58 +90,53 @@ def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
                 'username': user,
                 'password': pw,
             }
-            device_dict.update(Host = host)
-            
+            device_dict.update(Host=host)
+
             ssh = Netmiko(**device)
-            
+
             print('')
             print('_____________________________________________________________')
             print('')
-            print('Connection established to' , host)
+            print('Connection established to', host)
             print('_____________________________________________________________')
 
             time.sleep(5)
-            
+
             # Get the router/switches prompt. This will be used later to see if the commands are done.
-            deviceprompt = ssh.find_prompt() #NetMiko: find device prompt
-            device_dict.update(Hostname = deviceprompt)
+            deviceprompt = ssh.find_prompt()  # NetMiko: find device prompt
+            device_dict.update(Hostname=deviceprompt)
 
             ssh.send_command(
                 'terminal length 0\n'
             )
-            
-            #print('COMPLETE: terminal length 0')
 
-             # The string below doesn't work on slow or large stacks, so using send_command_timing instead
-            ''' # The below doesn't work on 
+            # print('COMPLETE: terminal length 0')
+
+            # The string below doesn't work on slow or large stacks, so using send_command_timing instead
+            ''' #  The below doesn't work
             runningconfig = ssh.send_command(
-               'sh run | sec interface\n' ,
+               'sh run | sec interface\n',
                 expect_string=r'#'
             )
             '''
 
-
             #######################################################
             ###### COMMAND WE WANT TO LOOK AT THE OUTPUT FOR ######
             #######################################################
-            
+
             runningconfig = ssh.send_command_timing(
-               'sh run | sec interface\n' ,
-               delay_factor=10 # This number * 2 seconds
+                'sh run | sec interface\n',
+                delay_factor=10  # This number * 2 seconds
             )
-            
-            #######################################################
-            #######################################################
-            
+
             print('COMPLETE: sh run | sec interface')
             print('working on output...')
 
             runningconfig = runningconfig.splitlines()
             parse = CiscoConfParse(runningconfig)
 
-
             ####################################################################
-            # Find access interfaces. Filter out any interface that has access # 
+            # Find access interfaces. Filter out any interface that has access #
             #  AND trunk since it's possible to have both config lines.        #
             ####################################################################
 
@@ -152,29 +147,26 @@ def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
                 for vlannum in commands:
                     accessvlan = 'switchport access vlan {}'.format(vlannum)
                     access_interface = i.has_child_with(accessvlan)
-                    if access_interface == True:
+                    if access_interface is True:
                         break
 
-                if access_interface == True:
+                if access_interface is True:
                     for line in i.all_children:
                         intvalues.append(line.text)
-                    Interfaces[i.text] = intvalues #{'int gi1/1: [conf line 1, line2 ...]}
-                device_dict.update(Interfaces = Interfaces) # put interfaces in device's dict
-            ##############################################################
-            ##############################################################                
-
+                    Interfaces[i.text] = intvalues  # {'int gi1/1: [conf line 1, line2 ...]}
+                device_dict.update(Interfaces=Interfaces)  # put interfaces in device's dict
 
             # Send output to the main program where it can be dumped to an output file
-            print('Adding this to report:' , device_dict)
+            print('Adding this to report:', device_dict)
             output_q.put(device_dict)
-            
+
             # Cleanup SSH
             ssh.disconnect()
-            
+
         except IndexError:
             pass
         except SSHException:
-            print('SSH error on' , host)
+            print('SSH error on', host)
 
         except KeyboardInterrupt:
             print('\n Keyboard interrupt detected. Exiting thread.')
@@ -189,7 +181,7 @@ def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
             ssh.disconnect()
         except Exception:
             pass
-            
+
     finally:
         threadLimiter.release()
 
@@ -212,9 +204,9 @@ def check_pingv2(host):
 def WorkIt(commands, host, user, pw, user_timeout, output_q):
     """ Placeholder function, primarily needed for multithreading  """
     pingstatus = check_pingv2(host)
-    if pingstatus == True:
+    if pingstatus is True:
         ssh_exec_command(commands, host, user, pw, user_timeout, output_q)
-    elif pingstatus == False:
+    elif pingstatus is False:
         threadLimiter.release()
 
 
@@ -225,7 +217,7 @@ def UserSelect():
         Asks the user whether they want to import a CSV for IPs to work on,
         or whether an IP range should be manually entered.
     """
-    
+
     print('\n' * 2)
     print('Would you like to import a CSV for IPs to work on, or manually')
     print('enter an IP range?')
@@ -241,8 +233,8 @@ def UserSelect():
             print('')
             return IPSource
         elif (IPSource == '2'):
-            #print('sleeping for 2 seconds...')
-            #time.sleep(2)
+            # print('sleeping for 2 seconds...')
+            # time.sleep(2)
             return IPSource
         elif (IPSource == '3'):
             print('')
@@ -252,8 +244,8 @@ def UserSelect():
             print('\n' * 5)
             UserSelect()
     except KeyboardInterrupt:
-            print('\n Fine. Exiting')
-            exit(0)
+        print('\n Fine. Exiting')
+        sys.exit(0)
 
 
 def NumberOfCommands():
@@ -292,7 +284,7 @@ def MaxThreads():
     Default:
         BoundedSephamore(100)
     """
-    
+
     threads = input('Max concurrent devices do you want to connect to (default 100): ')
     if threads == '':
         threads = int('100')
@@ -319,8 +311,8 @@ def solarwinds_query(npm_server, username, password):
 
 def SolarwindsIP(var):
     for devices in node_results['results']:
-    #for devices in var:
-            return devices['IPAddress']
+        #  For devices in var:
+        return devices['IPAddress']
 
 
 def CommandSource():
@@ -338,13 +330,12 @@ def CommandSource():
     else:
         print('Syntax Error!')
         print('\n' * 3)
-        print('var: ' , CommandsourceVar)
+        print('var: ', CommandSourceVar)
         quit(0)
         CommandSource()
 
 
 if __name__ == "__main__":
-
     # Clearing anything so we get a clean run
     counter = 0
     results = []
@@ -356,7 +347,7 @@ if __name__ == "__main__":
     today_str = str(datetime.date.today())
     timestamp = str(today_str + '-' + (time.strftime('%H%M%S')))
 
-    print('\n' * 20) # May not want to clear screen, so just putting a bunch of blank lines
+    print('\n' * 20)  # May not want to clear screen, so just putting a bunch of blank lines
     print('///////////////////////////////////////////////////////////////////////////////////////////////////')
     print('///////////////////////////////////////////////////////////////////////////////////////////////////')
     print('///////////////////////////////////////////////////////////////////////////////////////////////////')
@@ -386,14 +377,13 @@ if __name__ == "__main__":
     print('\n' * 3)
     time.sleep(1)
 
-
     # Ask the user what the souce is for devices
     try:
         IPSource = UserSelect()
         if IPSource == '1':
             startipInt = input('Starting IP: ')
             endipInt = input('Ending IP: ')
-            IPs = ConnectIPs(startipInt, endipInt)            
+            IPs = ConnectIPs(startipInt, endipInt)
 
         elif IPSource == '2':
             print('CSV file should have only one column with only IPs in a single column.')
@@ -403,8 +393,8 @@ if __name__ == "__main__":
             somecsvfile.withdraw()
             filename = filedialog.askopenfilename()
             print(filename)
-            
-            with open(filename , 'r') as infile:
+
+            with open(filename, 'r') as infile:
                 reader = csv.reader(infile)
                 IPs = [rows[0] for rows in reader]
 
@@ -412,12 +402,10 @@ if __name__ == "__main__":
             IPs = []
             # Define solarwinds creds and connection settings
             npm_server = input('Enter IP for SolarWinds NPM: ')
-            #npm_server = ''
+            # npm_server = ''
             username = input('Enter username to connect with: ')
-            # Note: Running this script in IDLE this will give an error on getpass.
-            #       This is an IDLE problem, not py problem
             password = getpass.getpass("Enter password: ")
-            #password = ''
+            # password = ''
 
             # Poll SolarWinds for data
             node_results = solarwinds_query(npm_server, username, password)
@@ -428,7 +416,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print('\n Fine. Exiting')
         exit(0)
-
 
     # Ask if user-entered commands or a text file of configuration should be used
     commands = []
@@ -443,7 +430,7 @@ if __name__ == "__main__":
             command = input('What command do you want to run: ')
             commands.append(command)
             CommandNumber = CommandNumber-1
-        
+
     elif CommandSourceVar == '2':
         commandfile = tk.Tk()
         commandfile.withdraw()
@@ -455,7 +442,7 @@ if __name__ == "__main__":
         commands = [x.strip() for x in commands]
         #commands = [x.strip() for x in content]
         CommandNumber = len(commands)
-        print('commands: ' , commands) 
+        print('commands: ' , commands)
     '''
 
     # Ask what VLANs we want to look for
@@ -466,21 +453,21 @@ if __name__ == "__main__":
     specifyvlan = str.lower(specifyvlan)
     if specifyvlan == 'y':
         print('\n')
-        CommandNumber = NumberOfCommands() # For code reuse purposes, the CommandNumber var is really VLAN operations
+        CommandNumber = NumberOfCommands()  # For code reuse purposes, the CommandNumber var is really VLAN operations
         while CommandNumber > 0:
             print('\n')
-            command = input('What access vlan are you looking for: ') # Command variable is holding vlans
+            command = input('What access vlan are you looking for: ')  # Command variable is holding vlans
             commands.append(command)
-            CommandNumber = CommandNumber-1
+            CommandNumber = CommandNumber - 1
     else:
-        command = ''   
+        command = ''
 
     # Get credentials for devices & setting some variables
     print('\n' * 2)
     print('Enter username to connect with.')
     user = input('(typically, the domain is not needed): ')
     print('')
-    pw = getpass.getpass("Enter password: ")  #Running this script in IDLE this will give an error. This is an IDLE problem.
+    pw = getpass.getpass("Enter password: ")
     print('\n' * 2)
 
     # Ask user how many threads they want to spawn
@@ -505,7 +492,7 @@ if __name__ == "__main__":
 
     dataexport = 'results-{}.json'.format(timestamp)
     information = []
-    
+
     # Get everything from the queue and add to a dictionary
     while not output_q.empty():
         my_dict = output_q.get()
@@ -515,7 +502,6 @@ if __name__ == "__main__":
     with open(dataexport, 'w') as my_data_file:
         json.dump(information, my_data_file)
 
-            
     print('\n' * 5)
-    print('Results saved as:' , dataexport)
+    print('Results saved as:', dataexport)
     print('\n' * 3)
