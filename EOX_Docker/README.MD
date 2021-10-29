@@ -1,7 +1,7 @@
 # eoxquery
 Simple Query Application for Cisco End of Life (EOX) API
 
-I made this into a docker image for portability. 
+I made this into a docker image for portability. It uses Flask as the web URL to interact with the python app. With the container running, go to https://127.0.0.1 to upload & download CSVs of PIDs/SNs.
 
 Add client credentials to package_config.ini file located in the src folder.
 
