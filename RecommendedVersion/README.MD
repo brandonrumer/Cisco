@@ -2,7 +2,7 @@
 Simple Query Application for Cisco Recommended Software Version API
 
 ## Requirements
-This application requires access to the "EOX API" provided at [https://apiconsole.cisco.com/](https://apiconsole.cisco.com/). 
+This application requires access to the "Software Suggestion" API provided at [https://apiconsole.cisco.com/](https://apiconsole.cisco.com/). 
 
 Details of the API is documented at the following link: [https://developer.cisco.com/docs/support-apis/#!software-suggestion/get-suggested-releases-and-images-by-product-ids](https://developer.cisco.com/docs/support-apis/#!software-suggestion/get-suggested-releases-and-images-by-product-ids)
 
