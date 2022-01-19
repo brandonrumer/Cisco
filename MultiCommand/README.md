@@ -3,7 +3,7 @@ Used to apply a set of configs to multiple Cisco devices.
 
 ## Prerequisites
 
-This script was a 'branch' of SingleCommand.py, and leverages NetMiko vs Paramko. 
+This script was a 'branch' (quoted bc it's not a real git branch) of SingleCommand.py, and leverages NetMiko vs Paramko. 
 
 ### Note
 
