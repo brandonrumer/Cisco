@@ -15,34 +15,22 @@ __status__ = "Production"
 
 """ Importing built-in modules """
 import sys
-# import socket
-# import os
 import argparse
 import getpass
-# import re
 import time
 
 
 """ Import external modules """
 from netmiko import Netmiko
-# from netmiko import file_transfer
 from paramiko.ssh_exception import SSHException
-# import requests
-# import textfsm
 
 
 def ssh_exec_command(checkinterface, host, user, pw, user_timeout):
     """ SSH to the device, sshsend checkinterface, and capture the output"""
 
     time.sleep(1)
-    ssh_error = 'SSH Error'
-
-    output = ''
-    output_list = []  # one per device
     keys = ['Host', 'Hostname', 'Interfaces']
     device_dict = {key: None for key in keys}
-    Interfaces = {}
-    output_dict = {}
 
     try:
         try:
@@ -84,17 +72,12 @@ def ssh_exec_command(checkinterface, host, user, pw, user_timeout):
             )
             '''
 
-            #######################################################
-            ###### COMMAND WE WANT TO LOOK AT THE OUTPUT FOR ######
-            #######################################################
+            # COMMAND WE WANT TO LOOK AT THE OUTPUT FOR
 
             sendcommand = 'show run interface {} | i description'.format(checkinterface)
             # print('sendcommand: ', sendcommand)
             # showinterface = ssh.send_command(sendcommand, use_textfsm=True)
             showinterface = ssh.send_command(sendcommand)
-
-            #######################################################
-            #######################################################
 
             if (showinterface == '') or (showinterface is None):
                 interfacedescription = 'No description'
@@ -103,7 +86,6 @@ def ssh_exec_command(checkinterface, host, user, pw, user_timeout):
                 print('1:', interfacedescription)
                 interfacedescription = interfacedescription[1]
 
-            printlist = [host, checkinterface, interfacedescription]
             print('')
             print('On {} ({}) the interface {} has a description of "{}"'.format(host, Hostname, checkinterface, interfacedescription))
             ssh.disconnect()
