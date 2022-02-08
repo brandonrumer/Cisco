@@ -39,21 +39,23 @@ __status__ = "Production"
 
 
 def process_args():
-    parser = argparse.ArgumentParser(description='Checks Cisco for pSIRTs on specific IOS/IOS-XE code.', \
-        formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description='Checks Cisco for pSIRTs on specific IOS/IOS-XE code.',
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument(
         '--file',
         action='store',
         metavar='file',
         required=True,
         help='Input CSV file of IOS Versions:'
-        )
+    )
     parser.add_argument(
         '--export',
         action='store_true',
         required=False,
         help='Save results as a CSV.'
-        )
+    )
     return parser.parse_args()
 
 
@@ -115,7 +117,7 @@ def main():
             writer = csv.writer(open(csvExport, 'w', newline=''))
             writer.writerow(['Version', 'pSIRT_ID', 'Advisory_Title', 'Severity'])
     except Exception:
-        #Catches error on user input, and just outputs to screen
+        # Catches error on user input, and just outputs to screen
         YesOrNo == 'n'
 
     versionfile = str(sys.argv[2])
@@ -143,8 +145,7 @@ def main():
                     resp = urllib.request.urlopen(req)
                     adv = resp.read()
                     advdata = json.loads(adv.decode('utf-8'))
-                    #print('advdata:',advdata)
-                    if YesOrNo =='y':
+                    if YesOrNo == 'y':
                         print('Saving to CSV:')
                     for advisory in advdata['advisories']:
                         if YesOrNo == 'n':
