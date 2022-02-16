@@ -1,4 +1,6 @@
 # singlecommand.py
+This script is depreciated. Use MultiCommand going forward (uses NetMiko).
+
 Used to apply a set of configs to multiple Cisco devices. There will be various branches of this which will be 
 customized for various tasks or devices
 

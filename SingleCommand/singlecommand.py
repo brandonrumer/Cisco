@@ -13,7 +13,7 @@ Description:
 """
 
 __author__ = "Brandon Rumer"
-__version__ = "1.4.1a"
+__version__ = "1.4.2"
 __email__ = "brumer@cisco.com"
 __status__ = "Production"
 
@@ -26,7 +26,6 @@ import getpass
 import ipaddress
 import os
 import re
-#import signal
 import socket
 import subprocess
 import sys
@@ -41,7 +40,7 @@ from tkinter import filedialog
 """ Import external modules """
 import paramiko
 import requests
-#from orionsdk import SwisClient # Solarwinds plugin
+
 
 '''
 def handler(signum, frame):
@@ -49,17 +48,23 @@ def handler(signum, frame):
     exit(0)
 '''
 
+
 def ConnectIPs(startipInt, endipInt):
     """ Collects the IPs in the range the user specified  """
     IPs = []
-    start_ip = ipaddress.IPv4Address(startipInt)
-    end_ip = ipaddress.IPv4Address(endipInt)
-    for ip_int in range(int(start_ip), int(end_ip)):
-        i = ipaddress.IPv4Address(ip_int)
+    if startipInt == endipInt:
+        i = ipaddress.IPv4Address(startipInt)
         IPs.append(str(i))
-    return IPs
+        return IPs
+    else:
+        start_ip = ipaddress.IPv4Address(startipInt)
+        end_ip = ipaddress.IPv4Address(endipInt)
+        for ip_int in range(int(start_ip), int(end_ip)):
+            i = ipaddress.IPv4Address(ip_int)
+            IPs.append(str(i))
+        return IPs
 
-       
+
 def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
     """ SSH to the device, send commands, and capture the output """
     output = ''
@@ -70,30 +75,30 @@ def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
             # Set up SSH session
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(host, username=user, password = pw)
+            ssh.connect(host, username= user, password= pw)
             print('')
             print('_____________________________________________________________')
             print('')
-            print('Connection established to' , host)
+            print('Connection established to', host)
             print('_____________________________________________________________')
             # Open Shell
             remote_shell = ssh.invoke_shell()
-            #output = remote_shell.recv(10000)
+            # output = remote_shell.recv(10000)
             time.sleep(3)
 
             # Clear Output (banner)
             if remote_shell.recv_ready():
                 output = remote_shell.recv(10000)
                 # Get the router/switches prompt. This will be used later to see if the commands are done.
-                deviceprompt = output.decode('ascii').rsplit('\n' , 1)[1]
-                #print('device prompt var: ' , deviceprompt)
+                deviceprompt = output.decode('ascii').rsplit('\n', 1)[1]
+                # print('device prompt var: ' , deviceprompt)
 
             CountOfCommands = len(commands)
 
             for i in commands:
                 deviceoutput = ''
-                cell = CountOfCommands+1 #CountOfCommands is the count, not the iteration currently on
-                # print('Output put in column ' , cell)
+                cell = CountOfCommands+1 #  CountOfCommands is the count, not the iteration currently on
+                # print('Output put in column ', cell)
                 # Send the command
                 sendIt = '{}\n'.format(i)
                 remote_shell.send(sendIt)
@@ -101,16 +106,15 @@ def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
 
                 ''' Capture the screen, insuring that the command is done executing. '''
                 output = CaptureScreen(remote_shell, deviceprompt)
-                #print('Done with command number ' , cell)
-                print('On ' , deviceprompt , ', done with command: ' , sendIt)
-                #print('output is: ' , output)
-                #####go back and add each command's output to a different column. Right now its all in one cell. ####
+                # print('Done with command number ', cell)
+                print('On ', deviceprompt, ', done with command: ', sendIt)
+                # print('output is: ', output)
 
             # Put gathered info into a row
-            output_list = [host, output] 
-            print('Adding this to report:' , output_list)
+            output_list = [host, output]
+            print('Adding this to report:', output_list)
             output_q.put([output_list])
-            
+
             # Cleanup SSH
             remote_shell.close()
             ssh.close()
@@ -139,7 +143,7 @@ def ssh_exec_command(commands, host, user, pw, user_timeout, output_q):
             ssh_error += ': Cannot connect to %s ' % (host) + 'SSH Exception: ' +  str(e)
             print('Cannot connect to {} '.format(host) + 'SSH Exception: ', e)
             ssh.close()
-            return ssh_error   
+            return ssh_error
 
     finally:
         threadLimiter.release()
@@ -162,14 +166,14 @@ def CaptureScreen(remote_shell, deviceprompt):
         deviceprompt variable. Example: Switch1#
     """
 
-    try: 
+    try:
         # Capture the screen to see what has changed
         if remote_shell.recv_ready():
-            outputnasty = remote_shell.recv(50000) # the output type is byte
+            outputnasty = remote_shell.recv(50000) #  the output type is byte
             # Save the last line on the screen which will be used to check command's status
             try:
-                lastline = outputnasty.decode('ascii').rsplit('\n' , 1)[1]
-                if (lastline == None) or (lastline == ''):
+                lastline = outputnasty.decode('ascii').rsplit('\n', 1)[1]
+                if (lastline is None) or (lastline == ''):
                     lastline == 'PYTHON MESSAGE: No change detected.'
             except IndexError:
                 lastline = 'PYTHON MESSAGE: No change detected.'
@@ -183,13 +187,11 @@ def CaptureScreen(remote_shell, deviceprompt):
         # Now we are capturing the screen FOR REPORTING, assuming the command is complete (later)
         # Clear the first line
         try:
-            output1 = outputnasty.decode('ascii').split('\n' , 1)[1]
-            #print('output1 var: ' , output1)
+            output1 = outputnasty.decode('ascii').split('\n', 1)[1]
+            # print('output1 var: ' , output1)
             # Clear the last line
-            output2 = output1.rsplit('\n' , 1)[0]
-            #print('output2 var: ' , )
+            output2 = output1.rsplit('\n', 1)[0]
             deviceoutput = output2
-            #print('deviceoutput var: ' , deviceoutput)
         except IndexError:
             deviceoutput = 'PYTHON MESSAGE: No change detected.'
         except AttributeError:
@@ -197,19 +199,19 @@ def CaptureScreen(remote_shell, deviceprompt):
         except KeyboardInterrupt:
             print('\n Fine. Exiting')
             exit(0)
-        
+
         # Compare last line to the device's prompt
         try:
             while (lastline.startswith(deviceprompt)):
                 # Account for a question, notify the user, and accept the default value
                 if ('[' in lastline) and (']' in lastline):
-                    print('Question detected: ' , lastline)
+                    print('Question detected: ', lastline)
                     print('Sending enter to accept the default value')
                     sendenter = '\n'
                     remote_shell.send(sendenter)
                     return CaptureScreen(remote_shell, deviceprompt)
                 elif '-More-' in lastline:
-                    print('-More- detected. Sending space to continue. Device: ' , deviceprompt)
+                    print('-More- detected. Sending space to continue. Device: ', deviceprompt)
                     print('')
                     sendspace = ' '
                     remote_shell.send(sendspace)
@@ -224,21 +226,21 @@ def CaptureScreen(remote_shell, deviceprompt):
                         print('\n Keyboard Interrupt. Exiting thread.')
                         deviceoutput = 'Keyboard Interrupt.'
                         return deviceoutput
-                    
+
         except KeyboardInterrupt:
             print('\n Keyboard Interrupt. Exiting thread.')
             deviceoutput = 'Keyboard Interrupt.'
             return deviceoutput
-        
+
         if deviceprompt == lastline:
             print('Command complete!')
-            #print('deviceoutput: ' , deviceoutput)
+            # print('deviceoutput: ', deviceoutput)
             return deviceoutput
 
     except KeyboardInterrupt:
         print('\n Fine. Exiting')
         exit(0)
-        
+
 
 def check_pingv2(host):
     """ Checks to see if the IP address responds to a single ping.  """
@@ -258,9 +260,9 @@ def check_pingv2(host):
 def WorkIt(commands, host, user, pw, user_timeout, output_q):
     """ Placeholder function, primarily needed for multithreading  """
     pingstatus = check_pingv2(host)
-    if pingstatus == True:
+    if pingstatus is True:
         ssh_exec_command(commands, host, user, pw, user_timeout, output_q)
-    elif pingstatus == False:
+    elif pingstatus is False:
         threadLimiter.release()
 
 
@@ -271,35 +273,30 @@ def UserSelect():
         Asks the user whether they want to import a CSV for IPs to work on,
         or whether an IP range should be manually entered.
     """
-    
-    print('\n' * 2)
+
+    print('\n')
     print('Would you like to import a CSV for IPs to work on, or manually')
     print('enter an IP range?')
     print('')
     print('Please choose:')
     print('Press "1" to specify an IP range')
     print('Press "2" to specify a CSV of IPs')
-    print('Press "3" to use SolarWinds')
     print('')
     try:
-        IPSource = input('Press 1 or 2 or 3: ')
+        IPSource = input('Press 1 or 2: ')
         if (IPSource == '1'):
             print('')
             return IPSource
         elif (IPSource == '2'):
-            print('sleeping for 2 seconds...')
-            time.sleep(2)
-            return IPSource
-        elif (IPSource == '3'):
-            print('')
             return IPSource
         else:
             print('Syntax Error!')
-            print('\n' * 5)
+            print('\n')
             UserSelect()
     except KeyboardInterrupt:
-            print('\n Fine. Exiting')
-            exit(0)
+        print('\n Fine. Exiting')
+        sys.exit(0)
+
 
 def NumberOfCommands():
     """ Asks the user to input a number between 1-9 """
@@ -315,8 +312,8 @@ def NumberOfCommands():
         CommandNumber = ''
         CommandNumber = NumberOfCommands()
     except KeyboardInterrupt:
-            print('\n Fine. Exiting')
-            exit(0)
+        print('\n Fine. Exiting')
+        sys.exit(0)
     if CommandNumber == 0:
         print('Zero is not a valid entry')
         CommandNumber = NumberOfCommands()
@@ -340,7 +337,7 @@ def MaxThreads():
     Default:
         BoundedSephamore(100)
     """
-    
+
     threads = input('Max concurrent devices do you want to connect to (default 100): ')
     if threads == '':
         threads = int('100')
@@ -353,22 +350,6 @@ def MaxThreads():
             print('Only input numeric numbers!')
             print('')
             Maxthreads()
-
-    
-def solarwinds_query(npm_server, username, password):
-    verify = False
-    if not verify:
-        from requests.packages.urllib3.exceptions import InsecureRequestWarning
-        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-    swis = SwisClient(npm_server, username, password)
-    node_results = swis.query("SELECT IPAddress from Orion.Nodes n where n.Vendor = 'Cisco'")
-    return node_results
-
-
-def SolarwindsIP(var):
-    for devices in node_results['results']:
-    #for devices in var:
-            return devices['IPAddress']
 
 
 def CommandSource():
@@ -386,11 +367,9 @@ def CommandSource():
     else:
         print('Syntax Error!')
         print('\n' * 3)
-        print('var: ' , CommandsourceVar)
+        print('var: ', CommandSourceVar)
         quit(0)
         CommandSource()
-
-        
 
 
 if __name__ == "__main__":
@@ -402,10 +381,8 @@ if __name__ == "__main__":
     output_q = Queue()
     user_timeout = 10000
 
+    # signal.signal(signal.SIGINT, handler)
 
-    #signal.signal(signal.SIGINT, handler)
-    
-    
     # Defining date & time
     today_str = str(datetime.date.today())
     timestamp = str(today_str + '-' + (time.strftime('%H%M%S')))
@@ -415,7 +392,7 @@ if __name__ == "__main__":
     writer = csv.writer(open(csvExport, 'w', newline=''))
     writer.writerow(['Host', 'Results'])
 
-    print('\n' * 20) # May not want to clear screen, so just putting a bunch of blank lines
+    print('\n' * 20) #  May not want to clear screen, so just putting a bunch of blank lines
     print('///////////////////////////////////////////////////////////////////////////////////////////////////')
     print('///////////////////////////////////////////////////////////////////////////////////////////////////')
     print('///////////////////////////////////////////////////////////////////////////////////////////////////')
@@ -463,39 +440,22 @@ if __name__ == "__main__":
         if IPSource == '1':
             startipInt = input('Starting IP: ')
             endipInt = input('Ending IP: ')
-            IPs = ConnectIPs(startipInt, endipInt)            
+            IPs = ConnectIPs(startipInt, endipInt)
 
         elif IPSource == '2':
             print('CSV file should have only one column with only IPs in a single column.')
+            print("Loading Windows File Explorer (if it doesn't show up check behind this terminal).")
             time.sleep(1)
             IPs = []
             somecsvfile = tk.Tk()
             somecsvfile.withdraw()
             filename = filedialog.askopenfilename()
             print(filename)
-            
-            with open(filename , 'r') as infile:
+
+            with open(filename, 'r') as infile:
                 reader = csv.reader(infile)
                 IPs = [rows[0] for rows in reader]
 
-        elif IPSource == '3':
-            IPs = []
-            # Define solarwinds creds and connection settings
-            npm_server = input('Enter IP for SolarWinds NPM: ')
-            #npm_server = ''
-            username = input('Enter username to connect with: ')
-            #username = ''
-            # Note: Running this script in IDLE this will give an error on getpass.
-            #       This is an IDLE problem, not py problem
-            password = getpass.getpass("Enter password: ")
-            #password = ''
-
-            # Poll SolarWinds for data
-            node_results = solarwinds_query(npm_server, username, password)
-            var = node_results['results']
-
-            for IP in var:
-                IPs.append(IP['IPAddress'])
     except KeyboardInterrupt:
         print('\n Fine. Exiting')
         exit(0)
@@ -508,23 +468,23 @@ if __name__ == "__main__":
         print('')
         CommandNumber = NumberOfCommands()
         while CommandNumber > 0:
-            print('CommandNumber: ' , CommandNumber)
+            print('CommandNumber: ', CommandNumber)
             command = input('What command do you want to run: ')
             commands.append(command)
             CommandNumber = CommandNumber-1
-        
+
     elif CommandSourceVar == '2':
         commandfile = tk.Tk()
         commandfile.withdraw()
 
         commandfilename = filedialog.askopenfilename()
-        print('Using this file for device configuration: ' , commandfilename)
+        print('Using this file for device configuration: ', commandfilename)
         with open(commandfilename) as f:
             commands = f.readlines()
         commands = [x.strip() for x in commands]
-        #commands = [x.strip() for x in content]
+        # commands = [x.strip() for x in content]
         CommandNumber = len(commands)
-    print('commands: ' , commands) 
+    print('commands: ', commands)
 
     # Get credentials for devices & setting some variables
     print('\n' * 2)
@@ -562,7 +522,7 @@ if __name__ == "__main__":
         my_dict = output_q.get()
         for datastuff in my_dict:
             writer.writerow(datastuff)
-            
+ 
     print('\n' * 5)
-    print('Results saved as:' , csvExport)
+    print('Results saved as:', csvExport)
     print('\n' * 3)
