@@ -41,7 +41,7 @@ from tkinter import filedialog
 """ Import external modules """
 import paramiko
 import requests
-from orionsdk import SwisClient # Solarwinds plugin
+#from orionsdk import SwisClient # Solarwinds plugin
 
 '''
 def handler(signum, frame):
