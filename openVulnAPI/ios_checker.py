@@ -151,20 +151,18 @@ def main():
                         print(advdata['errorMessage'])
                         pass
                     else:
-                        pass
-
-                    if YesOrNo == 'y':
-                        print('Saving to CSV:')
-                    for advisory in advdata['advisories']:
-                        if YesOrNo == 'n':
-                            print(version[0], ',', advisory['advisoryId'], ',', advisory['advisoryTitle'], ',', advisory['sir'])
-                            print("")
-                        elif YesOrNo == 'y':
-                            writer.writerow([version[0], advisory['advisoryId'], advisory['advisoryTitle'], advisory['sir']])
-                            print(version[0], ',', advisory['advisoryId'], ',', advisory['advisoryTitle'], ',', advisory['sir'])
-                            print("")
-                        else:
-                            continue
+                        if YesOrNo == 'y':
+                            print('Saving to CSV:')
+                        for advisory in advdata['advisories']:
+                            if YesOrNo == 'n':
+                                print(version[0], ',', advisory['advisoryId'], ',', advisory['advisoryTitle'], ',', advisory['sir'])
+                                print("")
+                            elif YesOrNo == 'y':
+                                writer.writerow([version[0], advisory['advisoryId'], advisory['advisoryTitle'], advisory['sir']])
+                                print(version[0], ',', advisory['advisoryId'], ',', advisory['advisoryTitle'], ',', advisory['sir'])
+                                print("")
+                            else:
+                                continue
                 except KeyboardInterrupt:
                     print('\n User Interrupt. Exiting.')
                     sys.exit(0)
