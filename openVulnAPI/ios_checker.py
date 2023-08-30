@@ -145,6 +145,14 @@ def main():
                     resp = urllib.request.urlopen(req)
                     adv = resp.read()
                     advdata = json.loads(adv.decode('utf-8'))
+
+                    #  Checking for invalid code versions
+                    if 'errorCode' in advdata:
+                        print(advdata['errorMessage'])
+                        pass
+                    else:
+                        pass
+
                     if YesOrNo == 'y':
                         print('Saving to CSV:')
                     for advisory in advdata['advisories']:
