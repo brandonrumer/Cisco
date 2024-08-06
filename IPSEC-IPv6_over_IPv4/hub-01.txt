@@ -1,0 +1,134 @@
+en
+conf t
+ no logging console
+ no logging monitor
+ no ip domain lookup
+ no enable secret
+ ip domain name somecompany.cloud
+ hostname hub-01
+
+
+!--- Create the Boot Level for VPN  ---
+conf t
+ license boot level network-advantage addon dna-advantage
+
+
+!-- For FlexVPN ---
+aaa new-model
+aaa authorization network FLEXVPN_LOCAL local
+
+
+vrf definition ISP
+ address-family ipv4
+ exit
+
+
+! Enable IPv6 routing
+ipv6 unicast-routing
+
+! Configure the IPv4 outside interface
+
+interface GigabitEthernet1
+ description Outside
+ vrf forwarding ISP
+ ip address 10.1.1.86 255.255.255.224 
+ no shut
+
+interface GigabitEthernet2
+ description Inside
+ ipv6 address 2510:6080:8300:0001::1/64
+ ipv6 nd autoconfig prefix 
+ no shut
+
+ int lo999
+  description VPN_loopback
+  ipv6 address 2503:6080:8300:74f0::1/64
+
+
+! Configure IPv6 IKEv2 routing
+ipv6 access-list VPN_ACL
+ permit ipv6 any any
+
+
+!----- Create IPSec Profile -----
+crypto ipsec transform-set TRANSFORM_SET esp-gcm 256
+ mode tunnel
+
+crypto ipsec profile IPSEC_PROFILE
+ set transform-set TRANSFORM_SET
+
+
+
+!-----  Create the IKEv2 Profile ----
+crypto ikev2 profile IKEV2_PROFILE
+ match fvrf ISP
+ match identity remote fqdn domain somecompany.cloud
+ identity local fqdn hub-01.somecompany.cloud
+ authentication remote pre-share 
+ authentication local pre-share
+ keyring local IKEV2_KEYRING
+ aaa authorization group psk list FLEXVPN_LOCAL IKEV2_AUTHORIZATION
+ nat force-encap
+ virtual-template 1
+
+
+!--- Create the Virtual Template for the DVTI
+interface Virtual-Template 1 type tunnel 
+ no ip address
+ ip mtu 1400
+ ip tcp adjust-mss 1360
+ delay 4000
+ ipv6 enable
+ ! ipv6 address autoconfig
+ ipv6 unnumbered loopback 999
+ ipv6 mtu 1400
+ ipv6 tcp adjust-mss 1358
+ ! ipv6 nd autoconfig prefix
+ tunnel source Gi1
+ tunnel mode ipv6ip
+ tunnel vrf ISP
+ tunnel protection ipsec profile IPSEC_PROFILE ikev2-profile IKEV2_PROFILE
+
+
+! Specify the remote pool of IPv6. Using /112 due to Cisco docs
+ipv6 local pool ipv6FLEXPOOL 2503:6080:8300:74f1::/112 128
+
+
+!-----  Create the aaa ikev2 authorization Policy ----
+crypto ikev2 authorization policy IKEV2_AUTHORIZATION
+ ipv6 pool ipv6FLEXPOOL
+ def-domain somecompany.cloud
+ route set interface
+ route set access-list ipv6 ipv6_FLEXVPN_ROUTES
+
+
+!-----  Create the FlexVPN access-list ----
+!----- For MS, the hub should be the default route
+ipv6 access-list ipv6_FLEXVPN_ROUTES
+ sequence 10 permit ipv6 any any
+
+
+!-----  Create the Keyring ----
+crypto ikev2 keyring IKEV2_KEYRING
+ peer remote_sites
+  address 0.0.0.0 0.0.0.0
+  pre-shared-key local cisco
+  pre-shared-key remote cisco
+
+
+!---- Create the ikev2 proposal ---
+crypto ikev2 proposal IKEV2-PROPOSAL
+ encryption aes-gcm-256
+ prf sha512
+ group 20
+
+crypto ikev2 policy IKEV2_POLICY
+ match fvrf ISP
+ proposal IKEV2-PROPOSAL
+
+
+! Static routes to the internet via firewalls
+ip route vrf ISP 0.0.0.0 0.0.0.0 10.1.1.66 
+
+
+

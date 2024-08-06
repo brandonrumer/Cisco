@@ -1,0 +1,17 @@
+!-- Hub L3 ------
+en
+conf t
+ no logging console
+ no logging monitor
+ no ip domain lookup
+ hostname HubL3
+
+ipv6 unicast-routing
+
+int e0/0
+ ipv6 address 2510:6080:8300:0001::2/64
+ no shut
+
+ipv6 route ::/0 2510:6080:8300:0001::1
+
+
