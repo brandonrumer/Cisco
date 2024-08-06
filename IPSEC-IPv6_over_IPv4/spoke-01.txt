@@ -24,48 +24,32 @@ vrf definition ISP
  exit
 exit
 
-
 ipv6 unicast-routing
 
-!
 interface GigabitEthernet1
  description Outside-Internet
  vrf forwarding ISP
  ip address 10.1.0.2 255.255.255.252
  no shut
-!
 
 interface GigabitEthernet2
  description Inside
  ipv6 address 2510:6080:8300:0002::1/64
  ipv6 nd autoconfig prefix 
  no shut
-!
+
 
 crypto ikev2 authorization policy IKEV2_AUTHORIZATION
  route set interface
  def-domain somecompany.cloud
  route set access-list ipv6 ipv6_FLEXVPN_ROUTES
 
-
 crypto ikev2 keyring IKEV2_KEYRING
  peer Hub1
   address 10.1.1.86
   pre-shared-key local cisco
   pre-shared-key remote cisco
- 
-
-crypto ikev2 profile IKEV2_PROFILE
- match fvrf ISP
- match identity remote fqdn domain somecompany.cloud
- identity local fqdn spoke-01.somecompany.cloud
- authentication remote pre-share
- authentication local pre-share
- keyring local IKEV2_KEYRING
- nat force-encap
- aaa authorization group psk list FLEXVPN_LOCAL IKEV2_AUTHORIZATION
-
-
+  
 !---- Create the ikev2 proposal ---
 crypto ikev2 proposal IKEV2-PROPOSAL
  encryption aes-gcm-256
@@ -82,6 +66,16 @@ crypto ipsec transform-set TRANSFORM_SET esp-gcm 256
 crypto ipsec profile IPSEC_PROFILE
  set transform-set TRANSFORM_SET
 
+crypto ikev2 profile IKEV2_PROFILE
+ match fvrf ISP
+ match identity remote fqdn domain somecompany.cloud
+ identity local fqdn spoke-01.somecompany.cloud
+ authentication remote pre-share
+ authentication local pre-share
+ keyring local IKEV2_KEYRING
+ nat force-encap
+ aaa authorization group psk list FLEXVPN_LOCAL IKEV2_AUTHORIZATION
+
 
 interface Tunnel0
  description FlexVPN Tunnel to Hub
@@ -89,8 +83,8 @@ interface Tunnel0
  ip mtu 1400
  ip tcp adjust-mss 1360
  delay 4000
- ipv6 enable
  ipv6 address negotiated
+ ipv6 enable
  ipv6 mtu 1400
  ipv6 tcp adjust-mss 1358
  tunnel source GigabitEthernet1
@@ -100,9 +94,9 @@ interface Tunnel0
  tunnel protection ipsec profile IPSEC_PROFILE ikev2-profile IKEV2_PROFILE
 
 
+ip route vrf ISP 0.0.0.0 0.0.0.0 10.1.0.1
+
+
 ! All routes will be directed through the tunnel interfaces, and they will be weighted
 !  to prefer VPN-01 
-ipv6 route ::/0 tunnel0 1
-
-
-ip route vrf ISP 0.0.0.0 0.0.0.0 10.1.0.1
+ipv6 route ::/0 tunnel0 
