@@ -94,7 +94,7 @@ interface Tunnel0
  ipv6 mtu 1400
  ipv6 tcp adjust-mss 1358
  tunnel source GigabitEthernet1
- tunnel mode ipv6ip
+ tunnel mode ipsec ipv4 
  tunnel destination 10.1.1.86
  tunnel vrf ISP
  tunnel protection ipsec profile IPSEC_PROFILE ikev2-profile IKEV2_PROFILE
